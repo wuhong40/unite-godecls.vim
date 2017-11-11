@@ -28,7 +28,7 @@ function! s:source.gather_candidates(args, context) abort
     return []
   endif
 
-  let l:include = get(g:, 'go_decls_includes', 'func,type')
+  let l:include = get(g:, 'go_decls_includes', 'func')
   let l:command = printf('%s -format vim -mode decls -include %s -%s %s', l:bin_path, l:include, l:mode, shellescape(l:path))
   let l:candidates = []
   try
@@ -38,8 +38,10 @@ function! s:source.gather_candidates(args, context) abort
     call unite#print_source_error(['command returned invalid response.', v:exception], s:source.name)
   endtry
 
+
   return map(l:candidates, "{
-        \ 'word': printf('%s :%d :%s', fnamemodify(v:val.filename, ':~:.'), v:val.line, v:val.full),
+        \ 'word': v:val.ident,
+        \ 'abbr': printf('%s',  v:val.full),
         \ 'kind': 'jump_list',
         \ 'action__path': v:val.filename,
         \ 'action__line': v:val.line,
@@ -50,7 +52,7 @@ endfunction
 function! s:source.hooks.on_syntax(args, context) abort
   syntax match uniteSource__Decls_Filepath /[^:]*\ze:/ contained containedin=uniteSource__Decls
   syntax match uniteSource__Decls_Line /\d\+\ze :/ contained containedin=uniteSource__Decls
-  syntax match uniteSource__Decls_WholeFunction /\vfunc %(\([^)]+\) )?[^(]+/ contained containedin=uniteSource__Decls
+  " syntax match uniteSource__Decls_WholeFunction /\vfunc %(\([^)]+\) )?[^(]+/ contained containedin=uniteSource__Decls
   syntax match uniteSource__Decls_Function /\S\+\ze(/ contained containedin=uniteSource__Decls_WholeFunction
   syntax match uniteSource__Decls_WholeType /type \S\+/ contained containedin=uniteSource__Decls
   syntax match uniteSource__Decls_Type /\v( )@<=\S+/ contained containedin=uniteSource__Decls_WholeType
@@ -60,7 +62,7 @@ function! s:source.hooks.on_syntax(args, context) abort
   highlight default link uniteSource__Decls_Type Type
 
   syntax match uniteSource__Decls_Separator /:/ contained containedin=uniteSource__Decls conceal
-  syntax match uniteSource__Decls_SeparatorFunction /func / contained containedin=uniteSource__Decls_WholeFunction conceal
+  " syntax match uniteSource__Decls_SeparatorFunction /func / contained containedin=uniteSource__Decls_WholeFunction conceal
   syntax match uniteSource__Decls_SeparatorType /type / contained containedin=uniteSource__Decls_WholeType conceal
 endfunction
 
