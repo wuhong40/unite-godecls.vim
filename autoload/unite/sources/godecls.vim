@@ -41,7 +41,7 @@ function! s:source.gather_candidates(args, context) abort
 
   return map(l:candidates, "{
         \ 'word': v:val.ident,
-        \ 'abbr': printf('%s',  v:val.full),
+        \ 'abbr': printf('%s\t%s', v:val.ident,  v:val.full),
         \ 'kind': 'jump_list',
         \ 'action__path': v:val.filename,
         \ 'action__line': v:val.line,
