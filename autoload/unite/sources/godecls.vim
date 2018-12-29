@@ -11,6 +11,14 @@ let s:source_func_curr = {
       \ 'hooks': {},
       \ }
 
+let s:source = {
+      \ 'name': 'godecls',
+      \ 'description': 'GoDecls implementation for unite',
+      \ 'syntax': 'uniteSource__Decls',
+      \ 'action_table': {},
+      \ 'hooks': {},
+      \ }
+
 let s:source_func = {
       \ 'name': 'godecls/funcs',
       \ 'description': 'GoDecls implementation for unite',
@@ -28,7 +36,15 @@ let s:source_type = {
       \ }
 
 function! unite#sources#godecls#define()
-  return [s:source_func_curr, s:source_func, s:source_type]
+  return [s:source, s:source_func_curr, s:source_func, s:source_type]
+endfunction
+
+function! s:source.gather_candidates(args, context) abort
+    let a:context.decls_include = "func,type"
+    let a:context.decls_mode = "dir"
+    let a:context.decls_path = getcwd()
+
+    return s:gather_candidates(a:args, a:context)
 endfunction
 
 function! s:source_func_curr.gather_candidates(args, context) abort
@@ -80,21 +96,21 @@ function! s:gather_candidates(args, context) abort
   let l:include = a:context.decls_include
 
   let path_all = [l:path]
-  if l:mode == "dir" 
+  if l:mode == "dir"
     let strfiles = globpath(l:path, "*")
     let files = split(strfiles, '\n')
-    for file in files 
+    for file in files
         " echomsg file . 'fuck'
         if isdirectory(file)
             let is_ignore = 0
             let dir_name = fnamemodify(file, ":t")
-            for dir in g:godecls_ignore_dir 
-                if dir_name =~ dir 
+            for dir in g:godecls_ignore_dir
+                if dir_name =~ dir
                     let is_ignore = 1
                     break
                 endif
             endfor
-            if !is_ignore 
+            if !is_ignore
                 call add(path_all, file)
             endif
         endif
